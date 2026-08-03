@@ -7,25 +7,13 @@ PRODUCT LINE — lado de la oferta: nuevos productos, nuevos procesos e
                innovaciones de competidores en química de metales.
 
 REGLAS DE CALIDAD:
-  - Descarte político    : lobbying, geopolítica, sanciones, guerras comerciales
-  - Descarte por fuente  : blogs personales y blogs académicos/institucionales
-  - Descarte listicle    : títulos que empiezan con número ("33 things", "10 ways")
-  - Descarte forecast    : pronósticos, "market size", "CAGR", "by 2030",
-                           reportes de mercado — el workflow exige EVENTOS
-                           concretos, no proyecciones ni estrategias a años.
-  - Evento concreto      : el artículo debe contener un verbo/frase de
-                           milestone (abre planta, invierte, firma contrato,
-                           adquiere, expande, etc.) — no solo mencionar
-                           la industria de pasada.
-  - Filtro por niveles (aplica a Endmarket y Product Line por igual):
-        Nivel 1 (ideal)    : evento concreto + tema correcto + país/región
-                             específico del continente mencionado
-        Nivel 2 (fallback) : evento concreto + tema correcto, pero SIN
-                             país confirmado — revisar región manualmente
-        Nivel 3 (Product Line, último recurso): sin forecast, sin plástico,
-                             pero sin exigir evento concreto ni tema exacto
-  - Cada fila exportada incluye Confidence_Level (1/2/3) para que puedas
-    priorizar revisión manual de los niveles 2 y 3.
+  - Descarte político   : lobbying, geopolítica, sanciones, guerras comerciales
+  - Descarte por fuente : blogs personales y blogs académicos/institucionales
+  - Descarte listicle   : títulos que empiezan con número ("33 things", "10 ways")
+  - Endmarkets          : debe contener al menos una palabra de mercado/industria
+  - Product Lines       : filtro por niveles —
+        Nivel 1 (ideal)  : innovación + sin plásticos
+        Nivel 2 (fallback): solo excluye plásticos (para regiones con poca cobertura)
   - Sin duplicados por combinación: deduplicación por URL normalizada
     (detecta paginación: /article-name-40 == /article-name)
 
@@ -41,15 +29,6 @@ CAMBIOS v13 (sobre v12):
   1. Etiquetas Endmarket actualizadas al nombre oficial del dashboard.
   2. Sistema de meta por combinación — reintenta combinaciones con 1–3 artículos
      hasta alcanzar TARGET_ARTICLES=4, sin volver a tocar las completas.
-
-CAMBIOS v13.1 (calidad — sobre v13):
-  1. Nuevo descarte de forecast/outlook/market-report (antes se colaban).
-  2. Nuevo requisito de "evento concreto" (milestone verb) para ambas categorías,
-     no solo Product Line.
-  3. Nueva validación de país/región específico por continente (antes el
-     continente solo se usaba como palabra de búsqueda, nunca se verificaba).
-  4. Sistema de 3 niveles de confianza en vez de 2; se exporta Confidence_Level
-     en cada fila para priorizar revisión manual.
 
 FECHAS: manuales — ajusta MONTH_START, MONTH_END y MONTH_LABEL cada mes.
 PROGRESO: se guarda en JSON por mes. Nunca se pierde trabajo entre corridas.
@@ -69,9 +48,9 @@ from datetime import datetime
 # CONFIGURACIÓN MENSUAL — AJUSTA ESTO CADA MES
 # ─────────────────────────────────────────────
 
-MONTH_START = "2026-07-01"
-MONTH_END   = "2026-07-31"
-MONTH_LABEL = "july_2026"
+MONTH_START = "2026-06-01"
+MONTH_END   = "2026-06-30"
+MONTH_LABEL = "june_2026"
 
 # ─────────────────────────────────────────────
 # API KEYS — reemplaza con las tuyas
@@ -214,78 +193,6 @@ BLOG_URL_PATTERNS = [
     "bruegel.org",           # think tank europeo
 ]
 
-# ─────────────────────────────────────────────
-# PAÍSES POR CONTINENTE — para validar que el artículo
-# nombra un país/región específico, no solo el continente
-# de forma genérica (regla del workflow).
-# NOTA: edita/agrega países según la cobertura que veas en tus artículos.
-# ─────────────────────────────────────────────
-
-COUNTRY_KEYWORDS = {
-    "Africa": [
-        "nigeria", "south africa", "egypt", "morocco", "kenya", "ghana",
-        "ethiopia", "algeria", "tunisia", "angola", "tanzania", "uganda",
-        "mozambique", "zambia", "senegal", "ivory coast", "côte d'ivoire",
-        "cameroon", "congo", "drc", "zimbabwe", "botswana", "namibia",
-        "rwanda", "libya", "sudan",
-    ],
-    "Europe": [
-        "germany", "france", "united kingdom", "britain", "uk", "italy",
-        "spain", "poland", "netherlands", "belgium", "sweden", "norway",
-        "finland", "denmark", "austria", "switzerland", "portugal",
-        "ireland", "czech", "slovakia", "hungary", "romania", "bulgaria",
-        "greece", "ukraine", "serbia", "croatia", "slovenia",
-    ],
-    "Middle East": [
-        "saudi arabia", "uae", "united arab emirates", "qatar", "kuwait",
-        "bahrain", "oman", "israel", "turkey", "iraq", "iran", "jordan",
-        "lebanon",
-    ],
-    "North America": [
-        "united states", "u.s.", "usa", "canada", "mexico",
-    ],
-    "North East Asia": [
-        "china", "japan", "south korea", "korea", "taiwan", "hong kong",
-    ],
-    "Oceania": [
-        "australia", "new zealand", "fiji", "papua new guinea",
-    ],
-    "South America": [
-        "brazil", "argentina", "chile", "colombia", "peru", "ecuador",
-        "uruguay", "paraguay", "bolivia", "venezuela",
-    ],
-    "South East Asia": [
-        "india", "indonesia", "vietnam", "thailand", "malaysia",
-        "philippines", "singapore", "myanmar", "cambodia", "bangladesh",
-        "pakistan",
-    ],
-}
-
-# ── Descarte forecast/outlook — aplica a TODAS las categorías ──────────
-# El workflow exige eventos concretos y verificables, no pronósticos,
-# reportes de mercado ni estrategias a varios años.
-FORECAST_EXCLUDED = [
-    "forecast", "outlook", "is expected to", "expected to reach",
-    "projected to", "market size", "cagr", "by 2028", "by 2029",
-    "by 2030", "by 2031", "by 2032", "by 2033", "by 2034", "by 2035",
-    "market report", "research report", "industry report",
-    "market analysis", "5-year plan", "five-year plan",
-    "long-term strategy", "market trends report",
-]
-
-# ── Verbos/frases de evento concreto (milestone) ────────────────────────
-# Un artículo válido debe describir un hecho verificable, no solo
-# mencionar la industria de pasada.
-MILESTONE_VERBS = [
-    "opens", "opened", "launches", "launched", "invests", "investment of",
-    "breaks ground", "begins production", "starts production", "completes",
-    "signs", "acquires", "acquisition", "expands", "expansion",
-    "commissions", "inaugurates", "unveils", "wins contract",
-    "secures contract", "to build", "will build", "constructs",
-    "new plant", "new facility", "capacity increase", "groundbreaking",
-    "announced plans to build", "announces plant", "announces investment",
-]
-
 CONTINENTS    = list(CONTINENT_KEYWORDS.keys())
 ENDMARKETS    = list(ENDMARKET_QUERIES.keys())
 PRODUCT_LINES = list(PRODUCT_LINE_QUERIES.keys())
@@ -363,117 +270,55 @@ def has_plastic(article: dict) -> bool:
     return any(word in t for word in PRODUCT_LINE_EXCLUDED)
 
 
-def is_forecast(article: dict) -> bool:
+def is_relevant_level1(article: dict, category: str) -> bool:
     """
-    Descarte forecast/outlook — aplica a TODAS las categorías.
-    Rechaza pronósticos de mercado, reportes de tamaño de mercado,
-    y estrategias a varios años — el workflow exige eventos concretos.
+    Nivel 1 — filtro completo (ideal).
+      Descarte previo  : político o blog → False (todas las categorías)
+      Endmarket        : contiene palabra de mercado/industria.
+      Product Line     : contiene palabra de innovación + sin plásticos.
     """
+    if _is_disqualified(article):
+        return False
+
     t = _text(article)
-    return any(word in t for word in FORECAST_EXCLUDED)
 
-
-def has_milestone_verb(article: dict) -> bool:
-    """
-    Verifica que el artículo describa un evento concreto y verificable
-    (apertura de planta, inversión, firma de contrato, adquisición, etc.)
-    en vez de solo mencionar la industria de pasada.
-    """
-    t = _text(article)
-    return any(word in t for word in MILESTONE_VERBS)
-
-
-def mentions_country(article: dict, continent: str) -> bool:
-    """
-    Verifica que el artículo nombre un país/región específico del
-    continente — no solo el nombre genérico del continente.
-    Regla del workflow: "no just the continent name generically".
-    """
-    t = _text(article)
-    countries = COUNTRY_KEYWORDS.get(continent, [])
-    return any(country in t for country in countries)
-
-
-def _passes_category_topic(article: dict, category: str) -> bool:
-    """Chequeo de tema (palabra de mercado o de producto), sin plásticos."""
-    t = _text(article)
     if category == "Endmarket":
         return any(word in t for word in ENDMARKET_REQUIRED)
+
+    # Product Line
     if has_plastic(article):
         return False
     return any(word in t for word in PRODUCT_LINE_REQUIRED)
 
 
-def is_relevant_level1(article: dict, category: str, continent: str) -> bool:
+def is_relevant_level2(article: dict, category: str) -> bool:
     """
-    Nivel 1 — filtro completo (ideal).
-      - No político / no blog / no listicle
-      - No es forecast/outlook/reporte de mercado
-      - Describe un evento concreto (milestone verb)
-      - Coincide con el tema de la categoría (y sin plásticos si es Product Line)
-      - Nombra un país/región específico del continente
-    """
-    if _is_disqualified(article):
-        return False
-    if is_forecast(article):
-        return False
-    if not has_milestone_verb(article):
-        return False
-    if not _passes_category_topic(article, category):
-        return False
-    return mentions_country(article, continent)
-
-
-def is_relevant_level2(article: dict, category: str, continent: str) -> bool:
-    """
-    Nivel 2 — igual que Nivel 1 pero SIN exigir país específico.
-    Se usa cuando la cobertura por país es escasa; el artículo
-    debe marcarse para revisión manual de la región.
-    """
-    if _is_disqualified(article):
-        return False
-    if is_forecast(article):
-        return False
-    if not has_milestone_verb(article):
-        return False
-    return _passes_category_topic(article, category)
-
-
-def is_relevant_level3(article: dict, category: str) -> bool:
-    """
-    Nivel 3 — último recurso, solo para Product Lines con muy poca
-    cobertura. Ya NO acepta forecasts (antes sí se colaban).
-    El descarte político y de blogs sigue aplicando.
+    Nivel 2 — filtro relajado (solo para Product Lines con poca cobertura).
+      El descarte político y de blogs sigue aplicando.
+      Se acepta cualquier artículo que NO hable de plásticos.
     """
     if category != "Product Line":
         return False
     if _is_disqualified(article):
         return False
-    if is_forecast(article):
-        return False
     return not has_plastic(article)
 
 
-def filter_articles(raw: list, category: str, continent: str) -> tuple[list, int]:
+def filter_articles(raw: list, category: str) -> tuple[list, int]:
     """
     Aplica filtros por nivel. Devuelve (artículos_válidos, nivel_usado).
-      nivel 1 = filtro completo (evento concreto + país específico)
-      nivel 2 = evento concreto, pero sin país específico confirmado
-      nivel 3 = último recurso (solo Product Line, sin plásticos ni forecast)
+      nivel 1 = filtro completo
+      nivel 2 = solo excluye plásticos
       nivel 0 = sin resultados
     """
-    level1 = [a for a in raw if is_relevant_level1(a, category, continent)]
+    level1 = [a for a in raw if is_relevant_level1(a, category)]
     if level1:
         return level1, 1
 
-    level2 = [a for a in raw if is_relevant_level2(a, category, continent)]
-    if level2:
-        return level2, 2
-
     if category == "Product Line":
-        level3 = [a for a in raw if is_relevant_level3(a, category)]
-        if level3:
-            return level3, 3
+        level2 = [a for a in raw if is_relevant_level2(a, category)]
+        if level2:
+            return level2, 2
 
     return [], 0
 
@@ -717,7 +562,7 @@ def run():
             ]
 
             # Filtrado por niveles
-            new_articles, level = filter_articles(raw_deduped, category, continent)
+            new_articles, level = filter_articles(raw_deduped, category)
 
             # Registrar URLs normalizadas de los artículos que pasaron el filtro
             for a in new_articles:
@@ -743,16 +588,11 @@ def run():
                         "News_Link":         art["url"],
                         "Fecha_Publicacion": art["published_at"],
                         "Global_Parent":     extract_global_parent(art),
-                        "Confidence_Level":  level,
                     })
                 art_counts[ckey] = existing + len(new_articles)
 
-                level_tags = {
-                    1: "",
-                    2: " ⚠ Nivel 2 (país no confirmado — revisar región)",
-                    3: " ⚠⚠ Nivel 3 (último recurso — revisar manualmente)",
-                }
-                print(f"    ✓ {len(new_articles)} artículo(s) — total: {art_counts[ckey]}{level_tags.get(level, '')}")
+                level_tag = "" if level == 1 else " ⚠ Nivel 2 (sin filtro innovación)"
+                print(f"    ✓ {len(new_articles)} artículo(s) — total: {art_counts[ckey]}{level_tag}")
 
             else:
                 if (category, continent, topic) not in attempted:
@@ -764,7 +604,6 @@ def run():
                         "News_Link":         "",
                         "Fecha_Publicacion": "",
                         "Global_Parent":     "",
-                        "Confidence_Level":  0,
                     })
                 art_counts[ckey] = existing
 
@@ -773,32 +612,18 @@ def run():
                 n_political   = sum(1 for a in raw_deduped if is_political(a))
                 n_blog        = sum(1 for a in raw_deduped if is_blog(a) and not is_political(a))
                 n_listicle    = sum(1 for a in raw_deduped if is_listicle(a) and not is_political(a) and not is_blog(a))
-                n_forecast    = sum(
-                    1 for a in raw_deduped
-                    if is_forecast(a) and not is_political(a) and not is_blog(a) and not is_listicle(a)
-                )
-                n_no_milestone = sum(
-                    1 for a in raw_deduped
-                    if not has_milestone_verb(a) and not is_political(a)
-                    and not is_blog(a) and not is_listicle(a) and not is_forecast(a)
-                )
-                n_filter = (
-                    total_deduped - len(new_articles) - n_political
-                    - n_blog - n_listicle - n_forecast - n_no_milestone
-                )
+                n_filter      = total_deduped - len(new_articles) - n_political - n_blog - n_listicle
 
                 msg = "sin resultados válidos"
                 reasons = []
                 if total_raw == 0:
                     msg += " (API no regresó artículos)"
                 else:
-                    if n_political:     reasons.append(f"{n_political} políticos")
-                    if n_blog:          reasons.append(f"{n_blog} blogs")
-                    if n_listicle:      reasons.append(f"{n_listicle} listicles")
-                    if n_forecast:      reasons.append(f"{n_forecast} forecast/outlook")
-                    if n_no_milestone:  reasons.append(f"{n_no_milestone} sin evento concreto")
-                    if n_filter:        reasons.append(f"{n_filter} por tema/país")
-                    if reasons:         msg += f" ({', '.join(reasons)} descartados)"
+                    if n_political: reasons.append(f"{n_political} políticos")
+                    if n_blog:      reasons.append(f"{n_blog} blogs")
+                    if n_listicle:  reasons.append(f"{n_listicle} listicles")
+                    if n_filter:    reasons.append(f"{n_filter} por filtro de relevancia")
+                    if reasons:     msg += f" ({', '.join(reasons)} descartados)"
                 print(f"    ↩ {msg}")
 
             attempted.add((category, continent, topic))
@@ -830,7 +655,7 @@ def export_excel(all_rows: list, art_counts: dict, total: int):
 
     COLUMNS = [
         "Continent", "Topic", "News_Headline",
-        "News_Link", "Fecha_Publicacion", "Global_Parent", "Confidence_Level",
+        "News_Link", "Fecha_Publicacion", "Global_Parent",
     ]
 
     df["_topic_order"] = df.apply(
@@ -853,7 +678,6 @@ def export_excel(all_rows: list, art_counts: dict, total: int):
         "Continent": 18, "End_Market": 28, "Product_Line": 28,
         "News_Headline": 65, "News_Link": 70,
         "Fecha_Publicacion": 18, "Global_Parent": 30,
-        "Confidence_Level": 16,
     }
 
     with pd.ExcelWriter(OUTPUT_FILE, engine="openpyxl") as writer:
